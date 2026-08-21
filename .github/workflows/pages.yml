@@ -1,19 +1,15 @@
 name: Deploy wedding site to GitHub Pages
-
 on:
   push:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
 jobs:
   deploy:
     environment:
@@ -23,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Build premium hero
+        run: python3 build_hero.py
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
