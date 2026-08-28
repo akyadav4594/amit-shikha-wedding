@@ -206,7 +206,7 @@
     </style>
 </head>
 <body>
-<audio id="weddingMusic" preload="auto" loop>
+<audio id="weddingMusic" preload="auto" loop playsinline>
     <source src="music/wedding-inviteMusic.mp3" type="audio/mpeg">
 </audio>
 <div class="welcome-overlay" id="welcomeOverlay" role="status" aria-live="polite"><div class="welcome-card"><div class="welcome-sparkle">✦</div><p>Congratulations</p><h1>You are invited to the<br>wedding of this season</h1><span>Amit &amp; Shikha · 2026</span></div></div>
@@ -318,59 +318,72 @@
     // --- Match & Reveal Game Logic ---
     document.addEventListener('DOMContentLoaded', () => {
         // --- Wedding Invitation music ---
-        // Music is ONLY triggered when the Wedding Invitation section is
-        // actually reached by scrolling. It is paused again when the visitor
-        // leaves that section.
+        // Preload the MP3 early so playback has as little startup delay as possible.
         const weddingMusic = document.getElementById('weddingMusic');
         const invitationSection = document.getElementById('invitation');
-        let invitationVisible = false;
+        let invitationPlaying = false;
 
-        function invitationIsVisible() {
+        if (weddingMusic) {
+            weddingMusic.volume = 0.7;
+            weddingMusic.preload = 'auto';
+            weddingMusic.load();
+        }
+
+        function invitationReached() {
             if (!invitationSection) return false;
-            const r = invitationSection.getBoundingClientRect();
+            const rect = invitationSection.getBoundingClientRect();
             const vh = window.innerHeight || document.documentElement.clientHeight;
-            // Start when at least a small part of the Invitation section is visible.
-            return r.top < vh * 0.75 && r.bottom > vh * 0.25;
+            return rect.top <= vh * 0.82 && rect.bottom >= vh * 0.18;
         }
 
-        function updateWeddingMusic() {
-            if (!weddingMusic || !invitationSection) return;
+        function playInvitationMusic() {
+            if (!weddingMusic || invitationPlaying) return;
+            invitationPlaying = true;
+            weddingMusic.volume = 0.7;
 
-            const visible = invitationIsVisible();
-
-            if (visible && !invitationVisible) {
-                invitationVisible = true;
-                weddingMusic.volume = 0.7;
-
-                // This is intentionally called from the user's scroll event.
-                // If the browser allows scroll-initiated media playback,
-                // music starts immediately as the Invitation section is reached.
-                const playPromise = weddingMusic.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(() => {
-                        // Some browsers require a tap/click before audio can play.
-                        // Do NOT start music anywhere else on the page.
-                    });
-                }
-            } else if (!visible && invitationVisible) {
-                invitationVisible = false;
-                weddingMusic.pause();
-                weddingMusic.currentTime = 0;
+            const promise = weddingMusic.play();
+            if (promise && typeof promise.catch === 'function') {
+                promise.catch(() => {
+                    // Browser autoplay policy may reject audible playback.
+                    invitationPlaying = false;
+                });
             }
         }
 
-        // Scroll is the ONLY event that triggers the Invitation music.
-        window.addEventListener('scroll', updateWeddingMusic, { passive: true });
+        function stopInvitationMusic() {
+            if (!weddingMusic || !invitationPlaying) return;
+            invitationPlaying = false;
+            weddingMusic.pause();
+            weddingMusic.currentTime = 0;
+        }
 
-        // Also check after layout/resize changes, but never start music unless
-        // the Invitation section is being reached as part of scrolling.
-        window.addEventListener('resize', () => {
-            if (invitationVisible && !invitationIsVisible()) {
-                invitationVisible = false;
-                weddingMusic.pause();
-                weddingMusic.currentTime = 0;
+        function checkInvitationOnScroll() {
+            if (!invitationSection || !weddingMusic) return;
+            if (invitationReached()) {
+                playInvitationMusic();
+            } else if (invitationPlaying) {
+                stopInvitationMusic();
             }
-        });
+        }
+
+        // Scrolling is the only playback trigger.
+        window.addEventListener('scroll', checkInvitationOnScroll, { passive: true });
+
+        // Trigger immediately when even a tiny part of the Invitation section
+        // enters the viewport.
+        if (invitationSection && 'IntersectionObserver' in window) {
+            const invitationObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        playInvitationMusic();
+                    } else if (invitationPlaying) {
+                        stopInvitationMusic();
+                    }
+                });
+            }, { threshold: 0.01 });
+
+            invitationObserver.observe(invitationSection);
+        }
 
         const board = document.getElementById('mahjong-board');
         if (!board) return;
