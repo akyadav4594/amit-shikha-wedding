@@ -202,12 +202,14 @@
                 margin-bottom: 20px; /* Adds breathing room below it */
             }
         }
+
     </style>
 </head>
 <body>
 <div class="welcome-overlay" id="welcomeOverlay" role="status" aria-live="polite"><div class="welcome-card"><div class="welcome-sparkle">✦</div><p>Congratulations</p><h1>You are invited to the<br>wedding of this season</h1><span>Amit &amp; Shikha · 2026</span></div></div>
 <div class="winner-celebration" id="winnerCelebration" aria-live="assertive"><div class="winner-date"><span>Date locked</span><strong>21 November<br>2026</strong><em>MJ River Resort · Rishikesh</em></div></div>
 <nav class="nav glass"><a class="brand" href="#top">Amit ♥ Shikha</a><div class="links"><a href="#story">Our Story</a><a href="#events">Events</a><a href="#venue">Venue</a><a href="#family">Family</a><a href="#rsvp">RSVP</a><a href="#gallery">Gallery</a></div></nav>
+
 <main id="top">
     <section class="hero"><div class="wrap hero-grid"><div class="hero-copy"><div class="monogram monogram-image"><img src="images/amit-shikha-monogram-transparent.png?v=3" alt="Amit and Shikha monogram"></div><div class="eyebrow">Welcome to our love story</div><div class="script">Amit & Shikha</div><div class="serif">Two hearts, one love,<br>and a lifetime together.</div><div class="hero-details"><div class="pillrow"><span class="pill">MJ River Resort</span><span class="pill">Rishikesh, Uttarakhand</span><span class="pill">#AmitWedsShikha</span></div></div><div class="hero-actions"><a class="btn primary" href="#rsvp">RSVP ♥</a><a class="btn soft" href="#events">View Celebration</a></div></div><div class="hero-frame"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="floral f1">❀</span><span class="floral f2">✿</span><img class="hero-photo" src="images/amit-shikha-hero-website.webp" alt="Amit and Shikha together in a colourful flower garden" fetchpriority="high"></div></div></section>
     <section><div class="wrap center enter"><div class="eyebrow">A little surprise</div><h2 class="title">Scratch to Reveal the Wedding Date</h2><p class="sub">One little interaction before you discover our special day.</p><div class="scratch-wrap"><div class="scratch" id="scratch"><div class="reveal"><div><div class="eyebrow">Save the date</div><div style="font:600 3.2rem 'Cormorant Garamond',serif">21 November 2026</div><div>MJ River Resort · Rishikesh</div></div></div><div class="scratch-hint">Scratch with your finger or mouse<span>✦</span></div><canvas id="scratchCanvas"></canvas></div></div></div></section>
@@ -260,11 +262,28 @@
             </div>
         </div>
     </section>
-    <section id="events"><div class="wrap"><div class="center"><div class="eyebrow">The celebration</div><h2 class="title">Wedding Events</h2><p class="sub">Five beautiful moments across two unforgettable days.</p></div><div class="grid3"><div class="card glass event"><small>Friday · 20 November 2026</small><h3>Mehndi</h3><strong>3:00 PM</strong><p>Emerald greens, intricate mehendi and a garden of laughter.</p></div><div class="card glass event"><small>Friday · 20 November 2026</small><h3>Sangeet</h3><strong>7:00 PM</strong><p>Music, lights and a night made for dancing.</p></div><div class="card glass event"><small>Saturday · 21 November 2026</small><h3>Haldi</h3><strong>9:00 AM</strong><p>Sunshine yellow, floral jewellery and joyful chaos.</p></div><div class="card glass event"><small>Saturday · 21 November 2026</small><h3>Jaimala</h3><strong>4:00 PM</strong><p>A beautiful garland exchange before the wedding rituals.</p></div><div class="card glass event"><small>Saturday · 21 November 2026</small><h3>Shubh Vivah</h3><strong>8:00 PM · Pheras</strong><p>Our sacred vows beneath the mandap.</p></div><div class="card glass event"><small>Venue</small><h3>MJ River Resort</h3><p>Ghatto Ghat, Neelkanth Temple Road, Taliyal Gaon, Rishikesh.</p><a class="btn soft" href="#venue">View Venue</a></div></div></div></section>
+    <section id="events"><div class="wrap"><div class="center"><div class="eyebrow">The celebration</div><h2 class="title">Wedding Events</h2><p class="sub">Five beautiful moments across two unforgettable days.</p></div><div class="grid3"><div class="card glass event"><small>Friday · 20 November 2026</small><h3>Mehendi</h3><strong>3:00 PM</strong><p>Emerald greens, intricate mehendi and a garden of laughter.</p></div><div class="card glass event"><small>Friday · 20 November 2026</small><h3>Sangeet</h3><strong>7:00 PM</strong><p>Music, lights and a night made for dancing.</p></div><div class="card glass event"><small>Saturday · 21 November 2026</small><h3>Haldi</h3><strong>9:00 AM</strong><p>Sunshine yellow, floral jewellery and joyful chaos.</p></div><div class="card glass event"><small>Saturday · 21 November 2026</small><h3>Jaimala</h3><strong>4:00 PM</strong><p>A beautiful garland exchange before the wedding rituals.</p></div><div class="card glass event"><small>Saturday · 21 November 2026</small><h3>Shubh Vivah</h3><strong>8:00 PM · Pheras</strong><p>Our sacred vows beneath the mandap.</p></div><div class="card glass event"><small>Venue</small><h3>MJ River Resort</h3><p>Ghatto Ghat, Neelkanth Temple Road, Taliyal Gaon, Rishikesh.</p><a class="btn soft" href="#venue">View Venue</a></div></div></div></section>
+    <section id="invitation">
+        <div class="wrap">
+            <div class="center">
+                <div class="eyebrow">Requesting the pleasure of your company</div>
+                <h2 class="title">Wedding Invitation</h2>
+                <p class="sub">View, save, and share our wedding invitation with family.</p>
+            </div>
+            <div class="card glass" style="max-width:720px;margin:auto;text-align:center">
+                <img src="images/Amit-Shikha-Wedding-Invitation.jpg" alt="Amit and Shikha wedding invitation card" style="display:block;width:min(560px,100%);max-height:900px;object-fit:contain;margin:0 auto 24px;border:1px solid rgba(200,161,93,.35);border-radius:22px;box-shadow:0 18px 45px rgba(79,49,24,.14);background:#f8efdf">
+                <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+                    <a class="btn primary" href="images/Amit-Shikha-Wedding-Invitation.jpg" target="_blank" rel="noopener">View↗</a>
+                    <a class="btn soft" href="images/Amit-Shikha-Wedding-Invitation.jpg" download="Amit-Shikha-Wedding-Invitation.jpg">Download♥</a>
+                </div>
+                <p style="margin:14px 0 0;color:var(--muted);font-size:.75rem">The invitation opens in a full-size view, and you can download the original image.</p>
+            </div>
+        </div>
+    </section>
     <section><div class="wrap center"><div class="eyebrow">Counting the days</div><h2 class="title">Countdown</h2><div class="count" id="countdown"><div class="time glass"><strong>—</strong><span>Days</span></div><div class="time glass"><strong>—</strong><span>Hours</span></div><div class="time glass"><strong>—</strong><span>Minutes</span></div><div class="time glass"><strong>—</strong><span>Seconds</span></div></div></div></section>
     <section id="venue"><div class="wrap"><div class="center"><div class="eyebrow">Where we celebrate</div><h2 class="title">MJ River Resort</h2><p class="sub">Ghatto Ghat, Neelkanth Temple Road, Taliyal Gaon, Rishikesh, Uttarakhand 249304, India</p></div><div class="grid2"><div class="card glass venue"><iframe loading="lazy" src="https://www.google.com/maps?q=MJ%20River%20Resort%2C%20Ghatto%20Ghat%2C%20Neelkanth%20Temple%20Road%2C%20Taliyal%20Gaon%2C%20Rishikesh%2C%20Uttarakhand%20249304%2C%20India&output=embed" title="MJ River Resort map"></iframe></div><div class="card glass"><div class="eyebrow">Venue address</div><h3 class="title" style="font-size:2.8rem">MJ River Resort</h3><p class="sub" style="margin:0 0 22px">Ghatto Ghat, Neelkanth Temple Road<br>Taliyal Gaon, Rishikesh<br>Uttarakhand 249304, India</p><a class="btn primary" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=MJ%20River%20Resort%2C%20Ghatto%20Ghat%2C%20Neelkanth%20Temple%20Road%2C%20Taliyal%20Gaon%2C%20Rishikesh%2C%20Uttarakhand%20249304%2C%20India">Get Directions ↗</a></div></div></div></section>
     <section id="family"><div class="wrap center"><div class="eyebrow">With the blessings of our families</div><h2 class="title">Meet the Family</h2><div class="grid2"><div class="card glass family-card"><div class="mini">The Bride's Family</div><p>D/o Mrs Meena & Mr Satish Singh</p></div><div class="card glass family-card"><div class="mini">The Groom's Family</div><p>S/o Mrs Savitri & Omprakash Yadav</p></div></div></div></section>
-    <section id="rsvp"><div class="wrap"><div class="center"><div class="eyebrow">We would love to celebrate with you</div><h2 class="title">RSVP</h2><p class="sub">Please tell us if you can join us and which days you'll be celebrating with us.</p></div><div class="card glass" style="max-width:760px;margin:auto"><form class="rsvp" id="rsvpForm"><div class="row"><input name="guest" placeholder="Guest Name" required><input name="phone" placeholder="Phone Number" type="tel" required></div><div class="row"><input name="guests" placeholder="Number of Guests" type="number" min="1" required><select name="attendance" id="attendance" required><option value="">Attendance</option><option value="Yes">Yes, I'll be there</option><option value="No">No, unable to attend</option></select></div><div><strong>Which dates will you attend?</strong><div class="date-options"><label><input type="checkbox" name="nov20" value="20Nov"> 20 Nov · Mehndi & Sangeet</label><label><input type="checkbox" name="nov21" value="21Nov"> 21 Nov · Haldi & Wedding</label></div></div><textarea name="message" rows="4" placeholder="Message for Amit & Shikha"></textarea><button class="btn primary" type="submit">Send RSVP ♥</button></form></div></div></section>
+    <section id="rsvp"><div class="wrap"><div class="center"><div class="eyebrow">We would love to celebrate with you</div><h2 class="title">RSVP</h2><p class="sub">Please tell us if you can join us and which days you'll be celebrating with us.</p></div><div class="card glass" style="max-width:760px;margin:auto"><form class="rsvp" id="rsvpForm"><div class="row"><input name="guest" placeholder="Guest Name" required><input name="phone" placeholder="Phone Number" type="tel" required></div><div class="row"><input name="guests" placeholder="Number of Guests" type="number" min="1" required><select name="attendance" id="attendance" required><option value="">Attendance</option><option value="Yes">Yes, I'll be there</option><option value="No">No, unable to attend</option></select></div><div><strong>Which dates will you attend?</strong><div class="date-options"><label><input type="checkbox" name="nov20" value="20Nov"> 20 Nov · Mehendi & Sangeet</label><label><input type="checkbox" name="nov21" value="21Nov"> 21 Nov · Haldi & Wedding</label></div></div><textarea name="message" rows="4" placeholder="Message for Amit & Shikha"></textarea><button class="btn primary" type="submit">Send RSVP ♥</button></form></div></div></section>
     <section id="game">
         <div class="wrap center">
             <div class="eyebrow">A little fun</div>
@@ -295,6 +314,7 @@
         // Your 5 tile images
         const tileImages = [
             'images/Designer3.jpg',
+            'images/Designer.jpg',
             'images/IMG_0068.jpg',
             'images/IMG_4352.jpg',
             'images/IMG_9715.jpg',
@@ -307,7 +327,8 @@
             ...tileImages,
             ...tileImages,
             tileImages[0],
-            tileImages[0]
+            tileImages[1],
+            tileImages[3],
         ];
 
         // Shuffle the deck randomly
@@ -367,7 +388,7 @@
                 // Check for Win (6 pairs in a 12-tile game)
                 if (matchedPairs === 6) {
                     // \n creates the break. \xA0 acts as unbreakable glue between the words.
-                    setTimeout(() => toast('Congratulations!\nYou\xA0revealed\xA0our\xA0special\xA0moment!\xA0💖'), 600);
+                    setTimeout(() => { toast('Congratulations!\nYou\xA0revealed\xA0our\xA0special\xA0moment!\xA0💖'); }, 600);
                 }
             }, 400);
         }
