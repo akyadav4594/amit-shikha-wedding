@@ -307,170 +307,109 @@
     <section><div class="wrap center"><div class="eyebrow">A promise</div><h2 class="title">#AmitWedsShikha</h2><p class="sub">Share your favourite memories from our celebration with our wedding hashtag.</p></div></section>
     <footer><div class="wrap"><div class="script" style="font-size:4rem">Thank You</div><p>With love, Amit & Shikha</p><p class="note">21 November 2026 · Rishikesh</p></div></footer>
 </main><div class="toast" id="toast"></div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const weddingMusic = document.getElementById('weddingMusic');
-        const invitationSection = document.getElementById('invitation');
-        const welcomeOverlay = document.getElementById('welcomeOverlay');
-        const enterButton = welcomeOverlay.querySelector('.welcome-card');
+    // --- 1. Audio Logic ---
+    let audioUnlocked = false;
+    let invitationPlaying = false;
+    const weddingMusic = document.getElementById('weddingMusic');
+    const invitationSection = document.getElementById('invitation');
 
-        let audioUnlocked = false;
-        let invitationPlaying = false;
+    if (weddingMusic) {
+        weddingMusic.volume = 0.7;
+        weddingMusic.preload = 'auto';
+    }
 
-        if (weddingMusic) {
-            weddingMusic.volume = 0.7;
-            weddingMusic.preload = 'auto';
-            weddingMusic.load();
-        }
-
-        // Unlock audio on "Enter" button click
-        enterButton.addEventListener('click', () => {
-            if (!audioUnlocked && weddingMusic) {
-                const promise = weddingMusic.play();
-                if (promise && typeof promise.then === 'function') {
-                    promise
-                        .then(() => {
-                            weddingMusic.pause();
-                            weddingMusic.currentTime = 0;
-                            audioUnlocked = true;
-                        })
-                        .catch(() => {
-                            console.warn('Audio unlock failed.');
-                        });
-                }
-            }
-        });
-
-        function invitationReached() {
-            if (!invitationSection) return false;
-            const rect = invitationSection.getBoundingClientRect();
-            const vh = window.innerHeight || document.documentElement.clientHeight;
-            return rect.top <= vh * 0.82 && rect.bottom >= vh * 0.18;
-        }
-
-        function playInvitationMusic() {
-            if (!weddingMusic || invitationPlaying || !audioUnlocked) return;
-            invitationPlaying = true;
+    // This function satisfies the browser autoplay requirement by playing music
+    // strictly during a direct user interaction, but we mute it so it's silent.
+    function unlockAudioSilently() {
+        if (!audioUnlocked && weddingMusic) {
+            weddingMusic.volume = 0; // Silent unlock
             const promise = weddingMusic.play();
-            if (promise && typeof promise.catch === 'function') {
-                promise.catch(() => {
-                    invitationPlaying = false;
+            if (promise !== undefined) {
+                promise.then(() => {
+                    // Instantly pause and reset to prepare for the actual invitation section
+                    weddingMusic.pause();
+                    weddingMusic.currentTime = 0;
+                    weddingMusic.volume = 0.7; // Restore volume
+                    audioUnlocked = true;
+                    // Double check in case they are already in the invitation section
+                    checkInvitationOnScroll();
+                }).catch(() => {
+                    console.warn('Audio unlock failed due to browser policies.');
                 });
             }
         }
+    }
 
-        function stopInvitationMusic() {
-            if (!weddingMusic || !invitationPlaying) return;
-            invitationPlaying = false;
-            weddingMusic.pause();
-            weddingMusic.currentTime = 0;
+    function invitationReached() {
+        if (!invitationSection) return false;
+        const rect = invitationSection.getBoundingClientRect();
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        return rect.top <= vh * 0.82 && rect.bottom >= vh * 0.18;
+    }
+
+    function playInvitationMusic() {
+        if (!weddingMusic || invitationPlaying || !audioUnlocked) return;
+        invitationPlaying = true;
+        const promise = weddingMusic.play();
+        if (promise && typeof promise.catch === 'function') {
+            promise.catch(() => {
+                invitationPlaying = false;
+            });
         }
+    }
 
-        function checkInvitationOnScroll() {
-            if (!invitationSection || !weddingMusic) return;
-            if (invitationReached()) {
-                playInvitationMusic();
-            } else if (invitationPlaying) {
-                stopInvitationMusic();
-            }
+    function stopInvitationMusic() {
+        if (!weddingMusic || !invitationPlaying) return;
+        invitationPlaying = false;
+        weddingMusic.pause();
+        weddingMusic.currentTime = 0; // Ensures it resets when they leave
+    }
+
+    function checkInvitationOnScroll() {
+        if (!invitationSection || !weddingMusic) return;
+        if (invitationReached()) {
+            playInvitationMusic();
+        } else {
+            stopInvitationMusic();
         }
+    }
 
-        // Scrolling is the only playback trigger.
-        window.addEventListener('scroll', checkInvitationOnScroll, { passive: true });
+    // Scroll drives the music toggling
+    window.addEventListener('scroll', checkInvitationOnScroll, { passive: true });
 
-        // Trigger immediately when even a tiny part of the Invitation section
-        // enters the viewport.
-        if (invitationSection && 'IntersectionObserver' in window) {
-            const invitationObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        playInvitationMusic();
-                    } else if (invitationPlaying) {
-                        stopInvitationMusic();
-                    }
-                });
-            }, { threshold: 0.01 });
+    // Intersection observer checks the boundaries reliably
+    if (invitationSection && 'IntersectionObserver' in window) {
+        const invitationObserver = new IntersectionObserver((entries) => {
+            entries.forEach(() => {
+                checkInvitationOnScroll();
+            });
+        }, { threshold: [0, 0.01, 0.1] });
+        invitationObserver.observe(invitationSection);
+    }
 
-            invitationObserver.observe(invitationSection);
-        }
-    });
+    // --- 2. Existing Utilities (RSVP, Countdown, Scratch Base) ---
     const endpoint='https://script.google.com/macros/s/AKfycbwGvvDpioK34_uPMOnSCobWyM0CfNcOL6N9AUSw0r-lsfdbeayPlYagYEcGz5K2VZGYyg/exec';
     const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500)};
     const form=document.getElementById('rsvpForm');const attendance=document.getElementById('attendance');const dates=[...form.querySelectorAll('input[name="nov20"],input[name="nov21"]')];function syncDates(){const no=attendance.value==='No';dates.forEach(x=>{x.disabled=no;if(no)x.checked=false})}attendance.addEventListener('change',syncDates);syncDates();
     form.addEventListener('submit',async e=>{e.preventDefault();const data=new FormData(form);if(data.get('attendance')==='Yes'&&!data.get('nov20')&&!data.get('nov21')){toast('Please select 20 Nov, 21 Nov, or both.');return}const btn=form.querySelector('button');btn.disabled=true;btn.textContent='Sending…';try{await fetch(endpoint,{method:'POST',mode:'no-cors',body:new URLSearchParams(data)});form.reset();syncDates();toast('Thank you! Your RSVP has been received. ❤️')}catch(err){toast('Something went wrong. Please try again.')}finally{btn.disabled=false;btn.textContent='Send RSVP ♥'}});
     const target=new Date('2026-11-21T20:00:00+05:30').getTime();function tick(){let d=Math.max(0,target-Date.now()),days=Math.floor(d/864e5);d%=864e5;let h=Math.floor(d/36e5);d%=36e5;let m=Math.floor(d/6e4);d%=6e4;let s=Math.floor(d/1e3);document.querySelector('#countdown').innerHTML=[days,h,m,s].map((v,i)=>`<div class="time glass"><strong>${v}</strong><span>${['Days','Hours','Minutes','Seconds'][i]}</span></div>`).join('')}tick();setInterval(tick,1000);
-    const canvas=document.getElementById('scratchCanvas'),ctx=canvas.getContext('2d'),box=document.getElementById('scratch'),winnerCelebration=document.getElementById('winnerCelebration');function resizeScratch(){const r=box.getBoundingClientRect(),d=devicePixelRatio||1;canvas.width=r.width*d;canvas.height=r.height*d;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(d,0,0,d,0,0);ctx.globalCompositeOperation='source-over';const g=ctx.createLinearGradient(0,0,r.width,r.height);g.addColorStop(0,'#bd633f');g.addColorStop(.5,'#a9442b');g.addColorStop(1,'#712f31');ctx.fillStyle=g;ctx.fillRect(0,0,r.width,r.height);ctx.fillStyle='rgba(255,220,145,.62)';for(let i=0;i<44;i++){ctx.beginPath();ctx.arc(Math.random()*r.width,Math.random()*r.height,Math.random()*1.8+.4,0,Math.PI*2);ctx.fill()}ctx.globalCompositeOperation='destination-out'}resizeScratch();addEventListener('resize',resizeScratch);let down=false,scratchStrokes=0,winnerShown=false;function launchWinner(){if(winnerShown)return;winnerShown=true;box.classList.add('winner');winnerCelebration.classList.add('is-visible');const colors=['#d17b90','#f7d472','#fff3d9','#b66073','#e9a6af'];for(let i=0;i<26;i++){const heart=document.createElement('span');heart.className='winner-heart';heart.textContent=i%5===0?'✦':'♥';heart.style.setProperty('--heart-x',`${Math.round((Math.random()-.5)*1500)}px`);heart.style.setProperty('--heart-y',`${Math.round(-180-Math.random()*900)}px`);heart.style.setProperty('--heart-rotate',`${Math.round((Math.random()-.5)*250)}deg`);heart.style.setProperty('--heart-color',colors[i%colors.length]);document.body.append(heart);setTimeout(()=>heart.remove(),2800)}setTimeout(()=>winnerCelebration.classList.remove('is-visible'),3700)}function scratchAt(e){if(!down||winnerShown)return;box.classList.add('is-scratching');const r=canvas.getBoundingClientRect(),p=e.touches?e.touches[0]:e;ctx.beginPath();ctx.arc(p.clientX-r.left,p.clientY-r.top,28,0,Math.PI*2);ctx.fill();scratchStrokes++;if(scratchStrokes===12)launchWinner()}canvas.addEventListener('pointerdown',e=>{down=true;scratchAt(e)});canvas.addEventListener('pointermove',scratchAt);addEventListener('pointerup',()=>down=false);canvas.addEventListener('touchstart',e=>{down=true;scratchAt(e)},{passive:true});canvas.addEventListener('touchmove',scratchAt,{passive:true});canvas.addEventListener('touchend',()=>down=false);const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.14});document.querySelectorAll('section:not(.hero) .wrap, .timeline-item').forEach(el=>{el.classList.add('enter');observer.observe(el)});
+
+    // --- 3. Scratch Feature (With Silent Audio Unlock injected here) ---
+    const canvas=document.getElementById('scratchCanvas'),ctx=canvas.getContext('2d'),box=document.getElementById('scratch'),winnerCelebration=document.getElementById('winnerCelebration');
+
+    // BIND THE AUDIO UNLOCK ONLY TO THE SCRATCH CANVAS INTERACTION
+    if (canvas) {
+        canvas.addEventListener('pointerdown', unlockAudioSilently, { once: true });
+        canvas.addEventListener('touchstart', unlockAudioSilently, { once: true, passive: true });
+    }
+
+    function resizeScratch(){const r=box.getBoundingClientRect(),d=devicePixelRatio||1;canvas.width=r.width*d;canvas.height=r.height*d;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(d,0,0,d,0,0);ctx.globalCompositeOperation='source-over';const g=ctx.createLinearGradient(0,0,r.width,r.height);g.addColorStop(0,'#bd633f');g.addColorStop(.5,'#a9442b');g.addColorStop(1,'#712f31');ctx.fillStyle=g;ctx.fillRect(0,0,r.width,r.height);ctx.fillStyle='rgba(255,220,145,.62)';for(let i=0;i<44;i++){ctx.beginPath();ctx.arc(Math.random()*r.width,Math.random()*r.height,Math.random()*1.8+.4,0,Math.PI*2);ctx.fill()}ctx.globalCompositeOperation='destination-out'}resizeScratch();addEventListener('resize',resizeScratch);let down=false,scratchStrokes=0,winnerShown=false;function launchWinner(){if(winnerShown)return;winnerShown=true;box.classList.add('winner');winnerCelebration.classList.add('is-visible');const colors=['#d17b90','#f7d472','#fff3d9','#b66073','#e9a6af'];for(let i=0;i<26;i++){const heart=document.createElement('span');heart.className='winner-heart';heart.textContent=i%5===0?'✦':'♥';heart.style.setProperty('--heart-x',`${Math.round((Math.random()-.5)*1500)}px`);heart.style.setProperty('--heart-y',`${Math.round(-180-Math.random()*900)}px`);heart.style.setProperty('--heart-rotate',`${Math.round((Math.random()-.5)*250)}deg`);heart.style.setProperty('--heart-color',colors[i%colors.length]);document.body.append(heart);setTimeout(()=>heart.remove(),2800)}setTimeout(()=>winnerCelebration.classList.remove('is-visible'),3700)}function scratchAt(e){if(!down||winnerShown)return;box.classList.add('is-scratching');const r=canvas.getBoundingClientRect(),p=e.touches?e.touches[0]:e;ctx.beginPath();ctx.arc(p.clientX-r.left,p.clientY-r.top,28,0,Math.PI*2);ctx.fill();scratchStrokes++;if(scratchStrokes===12)launchWinner()}canvas.addEventListener('pointerdown',e=>{down=true;scratchAt(e)});canvas.addEventListener('pointermove',scratchAt);addEventListener('pointerup',()=>down=false);canvas.addEventListener('touchstart',e=>{down=true;scratchAt(e)},{passive:true});canvas.addEventListener('touchmove',scratchAt,{passive:true});canvas.addEventListener('touchend',()=>down=false);const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.14});document.querySelectorAll('section:not(.hero) .wrap, .timeline-item').forEach(el=>{el.classList.add('enter');observer.observe(el)});
     const welcomeOverlay=document.getElementById('welcomeOverlay');setTimeout(()=>welcomeOverlay.classList.add('is-revealed'),3000);
-    // --- Match & Reveal Game Logic ---
+
+    // --- 4. Match & Reveal Game Logic ---
     document.addEventListener('DOMContentLoaded', () => {
-        // --- Wedding Invitation music ---
-        // Preload the MP3 early so playback has as little startup delay as possible.
-        const weddingMusic = document.getElementById('weddingMusic');
-        const invitationSection = document.getElementById('invitation');
-        let invitationPlaying = false;
-
-        if (weddingMusic) {
-            weddingMusic.volume = 0.7;
-            weddingMusic.preload = 'auto';
-            weddingMusic.load();
-        }
-
-        function invitationReached() {
-            if (!invitationSection) return false;
-            const rect = invitationSection.getBoundingClientRect();
-            const vh = window.innerHeight || document.documentElement.clientHeight;
-            return rect.top <= vh * 0.82 && rect.bottom >= vh * 0.18;
-        }
-
-        function playInvitationMusic() {
-            if (!weddingMusic || invitationPlaying) return;
-            invitationPlaying = true;
-            weddingMusic.volume = 0.7;
-
-            const promise = weddingMusic.play();
-            if (promise && typeof promise.catch === 'function') {
-                promise.catch(() => {
-                    // Browser autoplay policy may reject audible playback.
-                    invitationPlaying = false;
-                });
-            }
-        }
-
-        function stopInvitationMusic() {
-            if (!weddingMusic || !invitationPlaying) return;
-            invitationPlaying = false;
-            weddingMusic.pause();
-            weddingMusic.currentTime = 0;
-        }
-
-        function checkInvitationOnScroll() {
-            if (!invitationSection || !weddingMusic) return;
-            if (invitationReached()) {
-                playInvitationMusic();
-            } else if (invitationPlaying) {
-                stopInvitationMusic();
-            }
-        }
-
-        // Scrolling is the only playback trigger.
-        window.addEventListener('scroll', checkInvitationOnScroll, { passive: true });
-
-        // Trigger immediately when even a tiny part of the Invitation section
-        // enters the viewport.
-        if (invitationSection && 'IntersectionObserver' in window) {
-            const invitationObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        playInvitationMusic();
-                    } else if (invitationPlaying) {
-                        stopInvitationMusic();
-                    }
-                });
-            }, { threshold: 0.01 });
-
-            invitationObserver.observe(invitationSection);
-        }
-
         const board = document.getElementById('mahjong-board');
         if (!board) return;
 
@@ -485,7 +424,6 @@
         ];
 
         // Create 12 tiles (6 pairs).
-        // We use all 5 images to make 5 pairs, plus we use the first image again to make the 6th pair.
         let gameDeck = [
             ...tileImages,
             ...tileImages
@@ -506,7 +444,6 @@
             tile.dataset.image = imgSrc;
 
             tile.addEventListener('click', () => {
-                // Ignore clicks if board is locked, or if clicking the same tile or a matched one
                 if (lockBoard || tile === selectedTile || tile.classList.contains('matched')) return;
 
                 tile.classList.add('selected');
@@ -547,7 +484,6 @@
 
                 // Check for Win (6 pairs in a 12-tile game)
                 if (matchedPairs === 6) {
-                    // \n creates the break. \xA0 acts as unbreakable glue between the words.
                     setTimeout(() => { toast('Congratulations!\nYou\xA0revealed\xA0our\xA0special\xA0moment!\xA0💖'); }, 600);
                 }
             }, 400);
