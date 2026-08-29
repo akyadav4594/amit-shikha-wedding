@@ -308,6 +308,92 @@
     <footer><div class="wrap"><div class="script" style="font-size:4rem">Thank You</div><p>With love, Amit & Shikha</p><p class="note">21 November 2026 · Rishikesh</p></div></footer>
 </main><div class="toast" id="toast"></div>
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const weddingMusic = document.getElementById('weddingMusic');
+        const invitationSection = document.getElementById('invitation');
+        const welcomeOverlay = document.getElementById('welcomeOverlay');
+        const enterButton = welcomeOverlay.querySelector('.welcome-card');
+
+        let audioUnlocked = false;
+        let invitationPlaying = false;
+
+        if (weddingMusic) {
+            weddingMusic.volume = 0.7;
+            weddingMusic.preload = 'auto';
+            weddingMusic.load();
+        }
+
+        // Unlock audio on "Enter" button click
+        enterButton.addEventListener('click', () => {
+            if (!audioUnlocked && weddingMusic) {
+                const promise = weddingMusic.play();
+                if (promise && typeof promise.then === 'function') {
+                    promise
+                        .then(() => {
+                            weddingMusic.pause();
+                            weddingMusic.currentTime = 0;
+                            audioUnlocked = true;
+                        })
+                        .catch(() => {
+                            console.warn('Audio unlock failed.');
+                        });
+                }
+            }
+        });
+
+        function invitationReached() {
+            if (!invitationSection) return false;
+            const rect = invitationSection.getBoundingClientRect();
+            const vh = window.innerHeight || document.documentElement.clientHeight;
+            return rect.top <= vh * 0.82 && rect.bottom >= vh * 0.18;
+        }
+
+        function playInvitationMusic() {
+            if (!weddingMusic || invitationPlaying || !audioUnlocked) return;
+            invitationPlaying = true;
+            const promise = weddingMusic.play();
+            if (promise && typeof promise.catch === 'function') {
+                promise.catch(() => {
+                    invitationPlaying = false;
+                });
+            }
+        }
+
+        function stopInvitationMusic() {
+            if (!weddingMusic || !invitationPlaying) return;
+            invitationPlaying = false;
+            weddingMusic.pause();
+            weddingMusic.currentTime = 0;
+        }
+
+        function checkInvitationOnScroll() {
+            if (!invitationSection || !weddingMusic) return;
+            if (invitationReached()) {
+                playInvitationMusic();
+            } else if (invitationPlaying) {
+                stopInvitationMusic();
+            }
+        }
+
+        // Scrolling is the only playback trigger.
+        window.addEventListener('scroll', checkInvitationOnScroll, { passive: true });
+
+        // Trigger immediately when even a tiny part of the Invitation section
+        // enters the viewport.
+        if (invitationSection && 'IntersectionObserver' in window) {
+            const invitationObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        playInvitationMusic();
+                    } else if (invitationPlaying) {
+                        stopInvitationMusic();
+                    }
+                });
+            }, { threshold: 0.01 });
+
+            invitationObserver.observe(invitationSection);
+        }
+    });
     const endpoint='https://script.google.com/macros/s/AKfycbwGvvDpioK34_uPMOnSCobWyM0CfNcOL6N9AUSw0r-lsfdbeayPlYagYEcGz5K2VZGYyg/exec';
     const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500)};
     const form=document.getElementById('rsvpForm');const attendance=document.getElementById('attendance');const dates=[...form.querySelectorAll('input[name="nov20"],input[name="nov21"]')];function syncDates(){const no=attendance.value==='No';dates.forEach(x=>{x.disabled=no;if(no)x.checked=false})}attendance.addEventListener('change',syncDates);syncDates();
