@@ -206,7 +206,7 @@
     </style>
 </head>
 <body>
-<audio id="weddingMusic" preload="auto" loop playsinline>
+<audio id="weddingMusic" preload="auto" loop playsinline muted>
     <source src="music/wedding-inviteMusic.mp3" type="audio/mpeg">
 </audio>
 <div class="welcome-overlay" id="welcomeOverlay" role="status" aria-live="polite"><div class="welcome-card"><div class="welcome-sparkle">✦</div><p>Congratulations</p><h1>You are invited to the<br>wedding of this season</h1><span>Amit &amp; Shikha · 2026</span></div></div>
@@ -215,7 +215,9 @@
 
 <main id="top">
     <section class="hero"><div class="wrap hero-grid"><div class="hero-copy"><div class="monogram monogram-image"><img src="images/amit-shikha-monogram-transparent.png?v=3" alt="Amit and Shikha monogram"></div><div class="eyebrow">Welcome to our love story</div><div class="script">Amit & Shikha</div><div class="serif">Two hearts, one love,<br>and a lifetime together.</div><div class="hero-details"><div class="pillrow"><span class="pill">MJ River Resort</span><span class="pill">Rishikesh, Uttarakhand</span><span class="pill">#AmitWedsShikha</span></div></div><div class="hero-actions"><a class="btn primary" href="#rsvp">RSVP ♥</a><a class="btn soft" href="#events">View Celebration</a></div></div><div class="hero-frame"><span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span><span class="floral f1">❀</span><span class="floral f2">✿</span><img class="hero-photo" src="images/amit-shikha-hero-website.webp" alt="Amit and Shikha together in a colourful flower garden" fetchpriority="high"></div></div></section>
-    <section><div class="wrap center enter"><div class="eyebrow">A little surprise</div><h2 class="title">Scratch to Reveal the Wedding Date</h2><p class="sub">One little interaction before you discover our special day.</p><div class="scratch-wrap"><div class="scratch" id="scratch"><div class="reveal"><div><div class="eyebrow">Save the date</div><div style="font:600 3.2rem 'Cormorant Garamond',serif">21 November 2026</div><div>MJ River Resort · Rishikesh</div></div></div><div class="scratch-hint">Scratch with your finger or mouse<span>✦</span></div><canvas id="scratchCanvas"></canvas></div></div></div></section>
+    <section><div class="wrap center enter"><div class="eyebrow">A little surprise</div><h2 class="title">Scratch to Reveal the Wedding Date</h2><p class="sub">One little interaction before you discover our special day.</p><div class="scratch-wrap"><div class="scratch" id="scratch"><div class="reveal"><div><div class="eyebrow">Save the date</div><div style="font:600 3.2rem 'Cormorant Garamond',serif">21 November 2026</div><div>MJ River Resort · Rishikesh</div></div></div><div class="scratch-hint">Scratch with your finger or mouse<span>✦</span></div><canvas id="scratchCanvas"></canvas></div>
+        <button id="enableMusicBtn" class="btn soft" type="button" style="margin-top:18px">Enable Music ♪</button>
+        <p id="musicStatus" style="margin:10px 0 0;color:var(--muted);font-size:.72rem">Tap once to enable the wedding music. It will play when you reach the Invitation.</p></div></div></div></section>
     <section id="story">
         <div class="wrap center">
             <div class="eyebrow">A little bit of forever</div>
@@ -310,65 +312,126 @@
 
 <script>
     // --- 1. Audio Logic ---
-    let audioUnlocked = false;
-    let invitationPlaying = false;
     const weddingMusic = document.getElementById('weddingMusic');
     const invitationSection = document.getElementById('invitation');
+    const enableMusicBtn = document.getElementById('enableMusicBtn');
+    const musicStatus = document.getElementById('musicStatus');
+
+    let audioUnlocked = false;
+    let invitationPlaying = false;
 
     if (weddingMusic) {
-        weddingMusic.volume = 0.7;
         weddingMusic.preload = 'auto';
+        weddingMusic.loop = true;
+        weddingMusic.muted = true;
+        weddingMusic.volume = 0.7;
     }
 
-    // This function satisfies the browser autoplay requirement by playing music
-    // strictly during a direct user interaction, but we mute it so it's silent.
-    function unlockAudioSilently() {
-        if (!audioUnlocked && weddingMusic) {
-            weddingMusic.volume = 0; // Silent unlock
-            const promise = weddingMusic.play();
-            if (promise !== undefined) {
-                promise.then(() => {
-                    // Instantly pause and reset to prepare for the actual invitation section
-                    weddingMusic.pause();
-                    weddingMusic.currentTime = 0;
-                    weddingMusic.volume = 0.7; // Restore volume
-                    audioUnlocked = true;
-                    // Double check in case they are already in the invitation section
-                    checkInvitationOnScroll();
-                }).catch(() => {
-                    console.warn('Audio unlock failed due to browser policies.');
-                });
-            }
-        }
-    }
+    // IMPORTANT:
+    // Only the user's direct tap on the visible button calls play().
+    // This avoids the NotAllowedError caused by trying to unlock audio
+    // from scroll, timers, body events, or scratch events.
+    function enableWeddingMusic() {
+        if (!weddingMusic || audioUnlocked) return;
 
-    function invitationReached() {
-        if (!invitationSection) return false;
-        const rect = invitationSection.getBoundingClientRect();
-        const vh = window.innerHeight || document.documentElement.clientHeight;
-        return rect.top <= vh * 0.82 && rect.bottom >= vh * 0.18;
-    }
+        weddingMusic.muted = true;
+        weddingMusic.volume = 0;
 
-    function playInvitationMusic() {
-        if (!weddingMusic || invitationPlaying || !audioUnlocked) return;
-        invitationPlaying = true;
         const promise = weddingMusic.play();
-        if (promise && typeof promise.catch === 'function') {
-            promise.catch(() => {
-                invitationPlaying = false;
+
+        if (promise && typeof promise.then === 'function') {
+            promise.then(() => {
+                audioUnlocked = true;
+
+                // Keep the track playing silently until Invitation.
+                weddingMusic.muted = true;
+                weddingMusic.volume = 0;
+
+                if (enableMusicBtn) {
+                    enableMusicBtn.textContent = 'Music Enabled ✓';
+                    enableMusicBtn.disabled = true;
+                    enableMusicBtn.style.opacity = '0.7';
+                }
+
+                if (musicStatus) {
+                    musicStatus.textContent =
+                        'Music enabled ✓ It will start when you reach the Invitation.';
+                }
+
+                checkInvitationOnScroll();
+
+            }).catch((error) => {
+                console.warn('Music could not be enabled:', error);
+
+                if (musicStatus) {
+                    musicStatus.textContent =
+                        'Your browser blocked music. Please tap Enable Music again.';
+                }
             });
         }
     }
 
+    if (enableMusicBtn) {
+        enableMusicBtn.addEventListener('click', enableWeddingMusic);
+        enableMusicBtn.addEventListener('touchend', (e) => {
+            // Prevent a second synthetic click on browsers that fire both events.
+            if (!audioUnlocked) {
+                e.preventDefault();
+                enableWeddingMusic();
+            }
+        }, { passive: false });
+    }
+
+    function invitationReached() {
+        if (!invitationSection) return false;
+
+        const rect = invitationSection.getBoundingClientRect();
+        const vh = window.innerHeight ||
+            document.documentElement.clientHeight;
+
+        return (
+            rect.top <= vh * 0.82 &&
+            rect.bottom >= vh * 0.18
+        );
+    }
+
+    function playInvitationMusic() {
+        if (!weddingMusic || !audioUnlocked || invitationPlaying) return;
+
+        invitationPlaying = true;
+
+        // The audio is already playing from the user's button tap.
+        // We only reset its position and unmute here.
+        try {
+            weddingMusic.currentTime = 0;
+        } catch (e) {
+            console.warn('Could not reset music position:', e);
+        }
+
+        weddingMusic.muted = false;
+        weddingMusic.volume = 0.7;
+
+        console.log('Invitation reached - music ON.');
+    }
+
     function stopInvitationMusic() {
-        if (!weddingMusic || !invitationPlaying) return;
-        invitationPlaying = false;
-        weddingMusic.pause();
-        weddingMusic.currentTime = 0; // Ensures it resets when they leave
+        if (!weddingMusic) return;
+
+        if (invitationPlaying) {
+            invitationPlaying = false;
+
+            // DO NOT pause() here. Keep playback alive silently so
+            // returning to Invitation never needs another autoplay call.
+            weddingMusic.muted = true;
+            weddingMusic.volume = 0;
+
+            console.log('Left Invitation - music muted.');
+        }
     }
 
     function checkInvitationOnScroll() {
-        if (!invitationSection || !weddingMusic) return;
+        if (!invitationSection || !weddingMusic || !audioUnlocked) return;
+
         if (invitationReached()) {
             playInvitationMusic();
         } else {
@@ -376,16 +439,22 @@
         }
     }
 
-    // Scroll drives the music toggling
-    window.addEventListener('scroll', checkInvitationOnScroll, { passive: true });
+    window.addEventListener(
+        'scroll',
+        checkInvitationOnScroll,
+        { passive: true }
+    );
 
-    // Intersection observer checks the boundaries reliably
     if (invitationSection && 'IntersectionObserver' in window) {
-        const invitationObserver = new IntersectionObserver((entries) => {
-            entries.forEach(() => {
+        const invitationObserver = new IntersectionObserver(
+            () => {
                 checkInvitationOnScroll();
-            });
-        }, { threshold: [0, 0.01, 0.1] });
+            },
+            {
+                threshold: [0, 0.01, 0.1]
+            }
+        );
+
         invitationObserver.observe(invitationSection);
     }
 
@@ -398,16 +467,6 @@
 
     // --- 3. Scratch Feature (With Silent Audio Unlock injected here) ---
     const canvas=document.getElementById('scratchCanvas'),ctx=canvas.getContext('2d'),box=document.getElementById('scratch'),winnerCelebration=document.getElementById('winnerCelebration');
-
-    // BIND THE AUDIO UNLOCK ONLY TO THE SCRATCH CANVAS INTERACTION
- /*   if (canvas) {
-        canvas.addEventListener('pointerdown', unlockAudioSilently, { once: true });
-        canvas.addEventListener('touchstart', unlockAudioSilently, { once: true, passive: true });
-    }
-    **/
-    // Replace them with this:
-    document.body.addEventListener('pointerdown', unlockAudioSilently, { once: true });
-    document.body.addEventListener('touchstart', unlockAudioSilently, { once: true, passive: true });
 
     function resizeScratch(){const r=box.getBoundingClientRect(),d=devicePixelRatio||1;canvas.width=r.width*d;canvas.height=r.height*d;canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(d,0,0,d,0,0);ctx.globalCompositeOperation='source-over';const g=ctx.createLinearGradient(0,0,r.width,r.height);g.addColorStop(0,'#bd633f');g.addColorStop(.5,'#a9442b');g.addColorStop(1,'#712f31');ctx.fillStyle=g;ctx.fillRect(0,0,r.width,r.height);ctx.fillStyle='rgba(255,220,145,.62)';for(let i=0;i<44;i++){ctx.beginPath();ctx.arc(Math.random()*r.width,Math.random()*r.height,Math.random()*1.8+.4,0,Math.PI*2);ctx.fill()}ctx.globalCompositeOperation='destination-out'}resizeScratch();addEventListener('resize',resizeScratch);let down=false,scratchStrokes=0,winnerShown=false;function launchWinner(){if(winnerShown)return;winnerShown=true;box.classList.add('winner');winnerCelebration.classList.add('is-visible');const colors=['#d17b90','#f7d472','#fff3d9','#b66073','#e9a6af'];for(let i=0;i<26;i++){const heart=document.createElement('span');heart.className='winner-heart';heart.textContent=i%5===0?'✦':'♥';heart.style.setProperty('--heart-x',`${Math.round((Math.random()-.5)*1500)}px`);heart.style.setProperty('--heart-y',`${Math.round(-180-Math.random()*900)}px`);heart.style.setProperty('--heart-rotate',`${Math.round((Math.random()-.5)*250)}deg`);heart.style.setProperty('--heart-color',colors[i%colors.length]);document.body.append(heart);setTimeout(()=>heart.remove(),2800)}setTimeout(()=>winnerCelebration.classList.remove('is-visible'),3700)}function scratchAt(e){if(!down||winnerShown)return;box.classList.add('is-scratching');const r=canvas.getBoundingClientRect(),p=e.touches?e.touches[0]:e;ctx.beginPath();ctx.arc(p.clientX-r.left,p.clientY-r.top,28,0,Math.PI*2);ctx.fill();scratchStrokes++;if(scratchStrokes===12)launchWinner()}canvas.addEventListener('pointerdown',e=>{down=true;scratchAt(e)});canvas.addEventListener('pointermove',scratchAt);addEventListener('pointerup',()=>down=false);canvas.addEventListener('touchstart',e=>{down=true;scratchAt(e)},{passive:true});canvas.addEventListener('touchmove',scratchAt,{passive:true});canvas.addEventListener('touchend',()=>down=false);const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.14});document.querySelectorAll('section:not(.hero) .wrap, .timeline-item').forEach(el=>{el.classList.add('enter');observer.observe(el)});
     const welcomeOverlay=document.getElementById('welcomeOverlay');setTimeout(()=>welcomeOverlay.classList.add('is-revealed'),3000);
